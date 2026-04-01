@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/GSD-for_Antigravity-7B2D8E?style=for-the-badge&logoColor=white" alt="GSD for Antigravity" />
+<picture>
+  <img src="assets/banner.svg" alt="Get Shit Done for Antigravity" width="100%"/>
+</picture>
 
-# 🚀 Get Shit Done
-
-### A spec-driven, context-engineered development methodology
+<br/>
 
 [![Version](https://img.shields.io/badge/version-1.4.0-00C853?style=flat-square)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-2196F3?style=flat-square)](LICENSE)
@@ -20,7 +20,7 @@
 
 <br/>
 
-[Getting Started](#-getting-started) · [How It Works](#-how-it-works) · [Commands](#-commands-26-total) · [Documentation](#-documentation)
+[Getting Started](#-getting-started) · [How It Works](#-how-it-works) · [Commands](#-commands-29-total) · [Documentation](#-documentation)
 
 </div>
 
@@ -271,7 +271,7 @@ No "trust me, it works." Every verification produces evidence:
 
 ---
 
-## 🎮 Commands (26 Total)
+## 🎮 Commands (29 Total)
 
 > [!NOTE]
 > Slash commands are typed directly as chat messages (e.g. send `/plan 1`). They are **not** IDE autocomplete features — if your editor shows "nothing found" when pressing `/`, that's normal. Just type the full command and send it.
@@ -307,6 +307,14 @@ No "trust me, it works." Every verification produces evidence:
 | `/research-phase` | 🔬 Deep technical research |
 | `/list-phase-assumptions` | 📋 Surface planning assumptions |
 | `/plan-milestone-gaps` | 🔧 Create gap closure plans |
+
+### 🟡 Sprint
+
+| Command | Purpose |
+|---------|---------|
+| `/sprint new` | ⚡ Create a time-boxed sprint for quick focused work |
+| `/sprint status` | 📊 Show sprint progress |
+| `/sprint close` | ✅ Close sprint with retrospective |
 
 ### 🟣 Navigation & State
 
@@ -472,7 +480,7 @@ adapters/
 📄 GSD-STYLE.md              # Complete style guide
 
 📂 .agent/
-└── 📂 workflows/            # 25 slash commands
+└── 📂 workflows/            # 27 slash commands
 
 📂 .agents/
 └── 📂 skills/               # 11 agent specializations (Agent Skills standard)

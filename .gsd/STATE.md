@@ -1,26 +1,28 @@
 # STATE.md — Project Memory
 
-> **Last Updated**: Phase 1 complete
-> **Current Phase**: 1 — Complete. Ready for Phase 2.
+> **Last Updated**: Phase 2 planning complete
+> **Current Phase**: 2 — Backend Foundation
 
 ## Current Position
-- **Phase**: 1 Complete ✅
-- **Status**: Verified — artifacts pass integrity check
-- **Next**: Phase 2 — Backend Foundation
-
-## Last Session Summary
-Phase 1 (ML Pipeline) executed successfully. 2 plans, 4 tasks completed.
-- Artifacts: mlp_model.h5 (trained, 0.998 accuracy) + scaler.pkl
-- Key metric: fraud discrimination delta = 0.9997 (high-risk=1.0000. low-risk=0.0003)
+- **Phase**: 2 (Backend Foundation)
+- **Task**: Planning complete
+- **Status**: Ready for execution
 
 ## Next Steps
-1. `/plan 2` — create Phase 2 execution plans (Backend Foundation)
-2. `/execute 2` — scaffold FastAPI app + DB + model loader
+1. `/execute 2` — run all Phase 2 plans
+
+## Plans
+Phase 2 has 2 plans across 2 waves:
+- Wave 1: Plan 2.1 — App config + SQLAlchemy async models + DB session
+- Wave 2: Plan 2.2 — Pydantic schemas + model loader + FastAPI app + admin seed
+
+## Phase 1 Summary
+- MLP trained: accuracy=0.998, fraud delta=0.9997
+- Artifacts: backend/models/mlp_model.h5 + scaler.pkl
+- Dependencies installed: tensorflow, scikit-learn, imbalanced-learn, pandas, numpy
 
 ## Notes
-- Admin seed account mobile: 9999999999
-- To retrain: `cd backend && python -m ml_pipeline.train`
-- To verify artifacts: `cd backend && python ml_pipeline/verify_artifacts.py`
-- Dependencies installed: tensorflow, scikit-learn, imbalanced-learn, pandas, numpy
-- NOTE: requirements.txt uses tensorflow==2.16.1 but system may have 2.12.x installed
-  (protobuf conflict, non-blocking). Update requirements.txt version if needed for Docker.
+- Admin seed mobile: 9999999999
+- Train: `cd backend && python -m ml_pipeline.train`
+- Verify: `cd backend && python ml_pipeline/verify_artifacts.py`
+- venv: `.venv\Scripts\activate` (active as of last session)

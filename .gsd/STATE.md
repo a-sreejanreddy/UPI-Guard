@@ -1,28 +1,28 @@
-# STATE.md — Project Memory
+# STATE.md
 
-> **Last Updated**: Phase 2 planning complete
-> **Current Phase**: 2 — Backend Foundation
+> **Last Updated**: Phase 2 complete
+> **Current Phase**: 2 Complete. Ready for Phase 3.
 
 ## Current Position
-- **Phase**: 2 (Backend Foundation)
-- **Task**: Planning complete
-- **Status**: Ready for execution
+- **Phase**: 2 Complete
+- **Status**: Verified — /health returns 200, model_loaded=true, admin seeded
+- **Next**: Phase 3 — Auth & User Management API
+
+## Last Session Summary
+Phase 2 (Backend Foundation) executed successfully. 2 plans, 4 tasks complete.
+- DB: upi_guard.db with all 4 tables
+- Admin seeded: mobile=9999999999
+- Model loads cleanly on startup
+- /health endpoint working
 
 ## Next Steps
-1. `/execute 2` — run all Phase 2 plans
+1. `/plan 3` — plan Phase 3 (Auth + User Management API)
+2. `/execute 3` — implement OTP auth + JWT + admin CRUD
 
-## Plans
-Phase 2 has 2 plans across 2 waves:
-- Wave 1: Plan 2.1 — App config + SQLAlchemy async models + DB session
-- Wave 2: Plan 2.2 — Pydantic schemas + model loader + FastAPI app + admin seed
-
-## Phase 1 Summary
-- MLP trained: accuracy=0.998, fraud delta=0.9997
-- Artifacts: backend/models/mlp_model.h5 + scaler.pkl
-- Dependencies installed: tensorflow, scikit-learn, imbalanced-learn, pandas, numpy
+## Run Locally
+  cd backend && uvicorn app.main:app --reload --port 8000
 
 ## Notes
-- Admin seed mobile: 9999999999
-- Train: `cd backend && python -m ml_pipeline.train`
-- Verify: `cd backend && python ml_pipeline/verify_artifacts.py`
-- venv: `.venv\Scripts\activate` (active as of last session)
+- bcrypt==4.0.1 required (newer versions break passlib — pinned)
+- samesite=lax on cookie (local dev); change to strict for production
+- Admin mobile: 9999999999 (login with this to get admin JWT)

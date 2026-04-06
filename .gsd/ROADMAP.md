@@ -19,7 +19,7 @@
 ## Phases
 
 ### Phase 1: ML Pipeline
-**Status**: Not Started
+**Status**: Complete
 **Objective**: Produce the trained model artifacts that the entire backend depends on.
 
 **Deliverables:**

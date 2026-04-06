@@ -1,30 +1,26 @@
 # STATE.md — Project Memory
 
-> **Last Updated**: Phase 1 planning complete
-> **Current Phase**: 1 — ML Pipeline
+> **Last Updated**: Phase 1 complete
+> **Current Phase**: 1 — Complete. Ready for Phase 2.
 
 ## Current Position
-- **Phase**: 1 (ML Pipeline)
-- **Task**: Planning complete
-- **Status**: Ready for execution
+- **Phase**: 1 Complete ✅
+- **Status**: Verified — artifacts pass integrity check
+- **Next**: Phase 2 — Backend Foundation
+
+## Last Session Summary
+Phase 1 (ML Pipeline) executed successfully. 2 plans, 4 tasks completed.
+- Artifacts: mlp_model.h5 (trained, 0.998 accuracy) + scaler.pkl
+- Key metric: fraud discrimination delta = 0.9997 (high-risk=1.0000. low-risk=0.0003)
 
 ## Next Steps
-1. `/execute 1` — run all Phase 1 plans
-
-## Active Context
-- Phase 1 has 2 plans across 2 waves:
-  - Wave 1: Plan 1.1 — Directory structure + data generator
-  - Wave 2: Plan 1.2 — SMOTE + MLP training + save artifacts
-- Plans are in `.gsd/phases/1/`
-
-## Decisions Log
-See DECISIONS.md
-
-## Blockers
-None
+1. `/plan 2` — create Phase 2 execution plans (Backend Foundation)
+2. `/execute 2` — scaffold FastAPI app + DB + model loader
 
 ## Notes
-- Admin seed account mobile: 9999999999 (hardcoded for demo)
-- Model artifacts (model.h5, scaler.pkl) must be generated BEFORE starting the backend
-- Train script: `cd backend && python -m ml_pipeline.train`
-- Verify artifacts: `cd backend && python ml_pipeline/verify_artifacts.py`
+- Admin seed account mobile: 9999999999
+- To retrain: `cd backend && python -m ml_pipeline.train`
+- To verify artifacts: `cd backend && python ml_pipeline/verify_artifacts.py`
+- Dependencies installed: tensorflow, scikit-learn, imbalanced-learn, pandas, numpy
+- NOTE: requirements.txt uses tensorflow==2.16.1 but system may have 2.12.x installed
+  (protobuf conflict, non-blocking). Update requirements.txt version if needed for Docker.

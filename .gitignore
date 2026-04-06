@@ -29,3 +29,12 @@ env/
 
 # Environment variables
 .env
+
+# UPI Guard — ML artifacts & runtime files
+backend/models/*.h5
+backend/models/*.pkl
+backend/*.db
+backend/__pycache__/
+backend/app/**/__pycache__/
+backend/ml_pipeline/__pycache__/
+backend/ml_pipeline/sample_data_check.csv

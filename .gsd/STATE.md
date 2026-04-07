@@ -1,26 +1,28 @@
-# STATE.md — Project Memory
+# STATE.md
 
-> **Last Updated**: Phase 1 complete
-> **Current Phase**: 1 — Complete. Ready for Phase 2.
+> **Last Updated**: Phase 2 complete
+> **Current Phase**: 2 Complete. Ready for Phase 3.
 
 ## Current Position
-- **Phase**: 1 Complete ✅
-- **Status**: Verified — artifacts pass integrity check
-- **Next**: Phase 2 — Backend Foundation
+- **Phase**: 2 Complete
+- **Status**: Verified — /health returns 200, model_loaded=true, admin seeded
+- **Next**: Phase 3 — Auth & User Management API
 
 ## Last Session Summary
-Phase 1 (ML Pipeline) executed successfully. 2 plans, 4 tasks completed.
-- Artifacts: mlp_model.h5 (trained, 0.998 accuracy) + scaler.pkl
-- Key metric: fraud discrimination delta = 0.9997 (high-risk=1.0000. low-risk=0.0003)
+Phase 2 (Backend Foundation) executed successfully. 2 plans, 4 tasks complete.
+- DB: upi_guard.db with all 4 tables
+- Admin seeded: mobile=9999999999
+- Model loads cleanly on startup
+- /health endpoint working
 
 ## Next Steps
-1. `/plan 2` — create Phase 2 execution plans (Backend Foundation)
-2. `/execute 2` — scaffold FastAPI app + DB + model loader
+1. `/plan 3` — plan Phase 3 (Auth + User Management API)
+2. `/execute 3` — implement OTP auth + JWT + admin CRUD
+
+## Run Locally
+  cd backend && uvicorn app.main:app --reload --port 8000
 
 ## Notes
-- Admin seed account mobile: 9999999999
-- To retrain: `cd backend && python -m ml_pipeline.train`
-- To verify artifacts: `cd backend && python ml_pipeline/verify_artifacts.py`
-- Dependencies installed: tensorflow, scikit-learn, imbalanced-learn, pandas, numpy
-- NOTE: requirements.txt uses tensorflow==2.16.1 but system may have 2.12.x installed
-  (protobuf conflict, non-blocking). Update requirements.txt version if needed for Docker.
+- bcrypt==4.0.1 required (newer versions break passlib — pinned)
+- samesite=lax on cookie (local dev); change to strict for production
+- Admin mobile: 9999999999 (login with this to get admin JWT)

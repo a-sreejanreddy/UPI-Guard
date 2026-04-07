@@ -10,7 +10,7 @@ from typing import Optional
 
 from sqlalchemy import (
     Boolean, DateTime, Enum, Float, ForeignKey,
-    Integer, String, func,
+    Integer, String, UniqueConstraint, func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -115,7 +115,11 @@ class Transaction(Base):
     zip_prefix:        Mapped[int]   = mapped_column(Integer, nullable=False)
 
     # ── Idempotency (nullable because it didn't exist before) ────
-    idempotency_key: Mapped[Optional[str]] = mapped_column(String(100), unique=True, nullable=True)
+    idempotency_key: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "idempotency_key", name="uix_user_idempotency"),
+    )
 
     # ── Fraud decision ───────────────────────────────────────────────
     fraud_score: Mapped[float]             = mapped_column(Float, nullable=False)

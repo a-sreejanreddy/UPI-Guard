@@ -64,12 +64,13 @@ async def process_payment(
     existing_txn = existing_result.scalar_one_or_none()
     if existing_txn:
         msg = "Payment blocked due to suspected fraud." if existing_txn.status == TransactionStatus.BLOCKED_FRAUD else "Payment approved."
+        merchant_upi = existing_txn.merchant.upi_id if existing_txn.merchant else ""
         return PaymentResponseSchema(
             transaction_id=existing_txn.id,
             status=existing_txn.status,
             fraud_score=existing_txn.fraud_score,
             amount=existing_txn.amount,
-            merchant_upi=existing_txn.merchant.upi_id,
+            merchant_upi=merchant_upi,
             message=msg
         )
 
@@ -161,19 +162,29 @@ async def process_payment(
         await db.rollback()
         # Fallback to fetch from another concurrent request
         existing_result = await db.execute(
-            select(Transaction).where(
+            select(Transaction).options(selectinload(Transaction.merchant)).where(
                 Transaction.idempotency_key == idempotency_key,
                 Transaction.user_id == current_user.id
             )
         )
         txn = existing_result.scalar_one()
+        msg = "Payment blocked due to suspected fraud." if txn.status == TransactionStatus.BLOCKED_FRAUD else "Payment approved."
+        merchant_upi = txn.merchant.upi_id if txn.merchant else ""
+        return PaymentResponseSchema(
+            transaction_id=txn.id,
+            status=txn.status,
+            fraud_score=txn.fraud_score,
+            amount=txn.amount,
+            merchant_upi=merchant_upi,
+            message=msg
+        )
 
     # Response
-    message = "Payment blocked due to suspected fraud." if is_fraud else "Payment approved."
+    message = "Payment blocked due to suspected fraud." if txn.status == TransactionStatus.BLOCKED_FRAUD else "Payment approved."
     return PaymentResponseSchema(
         transaction_id=txn.id,
-        status=txn_status,
-        fraud_score=fraud_score,
+        status=txn.status,
+        fraud_score=txn.fraud_score,
         amount=txn.amount,
         merchant_upi=merchant.upi_id,
         message=message

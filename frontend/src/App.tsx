@@ -1,9 +1,41 @@
-function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <h1 className="text-3xl font-bold text-blue-600">UPI Guard Scaffolded Successfully!</h1>
-    </div>
-  )
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
+
+function LoginPlaceholder() {
+  return <div className="text-center p-8 text-xl">Login Page (Coming Soon)</div>;
 }
 
-export default App
+function DashboardPlaceholder({ title }: { title: string }) {
+  return <div className="text-center p-8 text-xl">{title} Dashboard (Coming Soon)</div>;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPlaceholder />} />
+      <Route element={<Layout />}>
+        {/* Protected User Routes */}
+        <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+          <Route path="/user" element={<DashboardPlaceholder title="User" />} />
+        </Route>
+        
+        {/* Protected Merchant Routes */}
+        <Route element={<ProtectedRoute allowedRoles={['merchant']} />}>
+          <Route path="/merchant" element={<DashboardPlaceholder title="Merchant" />} />
+        </Route>
+
+        {/* Protected Admin Routes */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route path="/admin" element={<DashboardPlaceholder title="Admin" />} />
+        </Route>
+        
+        {/* Fallback routing */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+
+export default App;

@@ -145,8 +145,8 @@ from app.api import auth
 app.include_router(auth.router,  prefix="/auth",   tags=["auth"])
 
 # Phase 3 will add:
-#   from app.api import admin
-#   app.include_router(admin.router, prefix="/admin",  tags=["admin"])
+from app.api import admin
+app.include_router(admin.router, prefix="/admin",  tags=["admin"])
 #
 # Phase 4 will add:
 #   from app.api import transactions, merchants

@@ -23,7 +23,7 @@ Implement `POST /transactions/pay` to serve as the core of the real-time fraud d
   <action>
     - Create `transactions.py` and initialize an `APIRouter()` prefixed with `/transactions` and depending on `get_current_user`.
     - Create `POST /pay` mapped to `PaymentRequestSchema` and yielding `PaymentResponseSchema`.
-    - Extract Merchant by `merchant_upi`. Verify logic logic (e.g. valid recipient).
+    - Extract Merchant by `merchant_upi`. Verify logic (e.g. valid recipient).
     - Map `STATE_CODE_MAP` and `MERCHANT_CATEGORY_MAP` from User/Merchant attributes.
     - Compile real-time timestamp components (`hour, day, month, year`), and parse `zip_prefix`.
     - Execute `get_model_loader().predict(features)` resolving an exact float `fraud_score`.

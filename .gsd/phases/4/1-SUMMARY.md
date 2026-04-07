@@ -5,4 +5,4 @@
 - Executed fraud_score computation synchronously using `get_model_loader().predict`.
 - Evaluated classification probability using `>= 0.5` mapping cleanly to `BLOCKED_FRAUD` or `APPROVED`.
 - Preserved complete runtime context immediately to database for analytics logs.
-- Wished onto main router array mapping base url path to `/transactions`.
+- Registered the transactions router on the main router array under `/transactions`.

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import logging
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -31,6 +31,17 @@ from app.schemas.transaction import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
+
+
+def _denormalize_transactions(txns: list[Transaction]) -> list[Transaction]:
+    """Helper to attach user and merchant UI names to the response."""
+    for t in txns:
+        if t.merchant:
+            t.merchant_upi = t.merchant.upi_id
+            t.merchant_name = t.merchant.business_name
+        if t.user:
+            t.user_name = t.user.name
+    return txns
 
 @router.post("/pay", response_model=PaymentResponseSchema, summary="Execute a payment with fraud inference")
 async def process_payment(
@@ -89,12 +100,12 @@ async def process_payment(
     # Model inference
     try:
         fraud_score = get_model_loader().predict(features)
-    except RuntimeError as e:
+    except Exception as e:
         logger.error(f"Inference engine failure: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Fraud engine unavailable"
-        )
+        ) from e
 
     # Verdict
     is_fraud = fraud_score >= 0.5
@@ -135,6 +146,8 @@ async def process_payment(
 
 @router.get("/my", response_model=List[TransactionResponseSchema], summary="View my transaction history")
 async def get_my_transactions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -143,23 +156,18 @@ async def get_my_transactions(
         .options(selectinload(Transaction.merchant), selectinload(Transaction.user))
         .where(Transaction.user_id == current_user.id)
         .order_by(Transaction.created_at.desc())
+        .offset(skip).limit(limit)
     )
     txns = result.scalars().all()
     
-    # Denormalize UI requirements before Pydantic resolves them
-    for t in txns:
-        if t.merchant:
-            t.merchant_upi = t.merchant.upi_id
-            t.merchant_name = t.merchant.business_name
-        if t.user:
-            t.user_name = t.user.name
-            
-    return txns
+    return _denormalize_transactions(txns)
 
 
 @router.get("/merchant/{merchant_id}", response_model=List[TransactionResponseSchema], summary="View merchant received transactions")
 async def get_merchant_transactions(
     merchant_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     current_user: User = Depends(require_role("merchant")),
     db: AsyncSession = Depends(get_db)
 ):
@@ -186,14 +194,8 @@ async def get_merchant_transactions(
         .options(selectinload(Transaction.merchant), selectinload(Transaction.user))
         .where(Transaction.merchant_id == merchant_id)
         .order_by(Transaction.created_at.desc())
+        .offset(skip).limit(limit)
     )
     txns = result.scalars().all()
     
-    for t in txns:
-        if t.merchant:
-            t.merchant_upi = t.merchant.upi_id
-            t.merchant_name = t.merchant.business_name
-        if t.user:
-            t.user_name = t.user.name
-            
-    return txns
+    return _denormalize_transactions(txns)

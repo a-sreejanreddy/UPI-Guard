@@ -7,7 +7,7 @@ wave: 2
 # Plan 4.2: Audit Logs, User History & Admin Override
 
 ## Objective
-Finalize Phase 4 by equipping authenticated Users/Merchants with historical payment oversight, and supplying Administrators an elevated capability to scrutinize model behavior (the 10-feature audit) and manually override inference blockage.
+Finalize Phase 4 by equipping authenticated Users/Merchants with historical payment oversight, and supplying Administrators an elevated capability to scrutinize model behavior (the 9 transaction-feature audit) and manually override inference blockage.
 
 ## Context
 - .gsd/ROADMAP.md

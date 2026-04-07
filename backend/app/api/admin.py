@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
@@ -148,39 +148,47 @@ async def list_transactions(
     return txns
 
 
-@router.post("/transactions/{id}/override", response_model=OverrideResponseSchema, summary="Admin override blocked fraud")
+@router.post("/transactions/{transaction_id}/override", response_model=OverrideResponseSchema, summary="Admin override blocked fraud")
 async def override_transaction(
-    id: int,
+    transaction_id: int,
     current_user: User = Depends(require_role("admin")),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(Transaction).where(Transaction.id == id))
-    txn = result.scalar_one_or_none()
-    
-    if not txn:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transaction not found"
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    update_result = await db.execute(
+        update(Transaction)
+        .where(Transaction.id == transaction_id)
+        .where(Transaction.status == TransactionStatus.BLOCKED_FRAUD)
+        .values(
+            status=TransactionStatus.ADMIN_OVERRIDDEN,
+            override_by_admin_id=current_user.id,
+            override_at=now
         )
-        
-    if txn.status != TransactionStatus.BLOCKED_FRAUD:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot override transaction with status: {txn.status}"
-        )
-        
-    previous_status = txn.status
-    txn.status = TransactionStatus.ADMIN_OVERRIDDEN
-    txn.override_by_admin_id = current_user.id
-    txn.override_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    )
     
-    db.add(txn)
+    if update_result.rowcount == 0:
+        result = await db.execute(select(Transaction).where(Transaction.id == transaction_id))
+        txn = result.scalar_one_or_none()
+        
+        if not txn:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Transaction not found"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot override transaction with status: {txn.status}"
+            )
+            
     await db.commit()
-    await db.refresh(txn)
+    
+    result = await db.execute(select(Transaction).where(Transaction.id == transaction_id))
+    txn = result.scalar_one()
     
     return OverrideResponseSchema(
         transaction_id=txn.id,
-        previous_status=previous_status,
+        previous_status=TransactionStatus.BLOCKED_FRAUD,
         new_status=txn.status,
         message="Transaction approved by admin override"
     )

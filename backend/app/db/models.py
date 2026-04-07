@@ -110,9 +110,12 @@ class Transaction(Base):
     month:             Mapped[int]   = mapped_column(Integer, nullable=False)
     year:              Mapped[int]   = mapped_column(Integer, nullable=False)
     merchant_category: Mapped[int]   = mapped_column(Integer, nullable=False)
-    user_age:          Mapped[int]   = mapped_column(Integer, nullable=False)
+    user_age:          Mapped[int]   = mapped_column(Integer, nullable=False, default=0)
     state_code:        Mapped[int]   = mapped_column(Integer, nullable=False)
     zip_prefix:        Mapped[int]   = mapped_column(Integer, nullable=False)
+
+    # ── Idempotency (nullable because it didn't exist before) ────
+    idempotency_key: Mapped[Optional[str]] = mapped_column(String(100), unique=True, nullable=True)
 
     # ── Fraud decision ───────────────────────────────────────────────
     fraud_score: Mapped[float]             = mapped_column(Float, nullable=False)

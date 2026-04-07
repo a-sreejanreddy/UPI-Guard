@@ -1,13 +1,15 @@
 """
 app/api/transactions.py — Transactions and Payment endpoints
 """
+import asyncio
 from datetime import datetime, timezone
 import logging
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.core.security import get_current_user, require_role
@@ -46,9 +48,31 @@ def _denormalize_transactions(txns: list[Transaction]) -> list[Transaction]:
 @router.post("/pay", response_model=PaymentResponseSchema, summary="Execute a payment with fraud inference")
 async def process_payment(
     payload: PaymentRequestSchema,
+    idempotency_key: str = Header(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Idempotency pre-check
+    existing_result = await db.execute(
+        select(Transaction)
+        .options(selectinload(Transaction.merchant))
+        .where(
+            Transaction.idempotency_key == idempotency_key,
+            Transaction.user_id == current_user.id
+        )
+    )
+    existing_txn = existing_result.scalar_one_or_none()
+    if existing_txn:
+        msg = "Payment blocked due to suspected fraud." if existing_txn.status == TransactionStatus.BLOCKED_FRAUD else "Payment approved."
+        return PaymentResponseSchema(
+            transaction_id=existing_txn.id,
+            status=existing_txn.status,
+            fraud_score=existing_txn.fraud_score,
+            amount=existing_txn.amount,
+            merchant_upi=existing_txn.merchant.upi_id,
+            message=msg
+        )
+
     # Lookup recipient merchant by UPI ID
     merchant_result = await db.execute(select(Merchant).where(Merchant.upi_id == payload.merchant_upi))
     merchant = merchant_result.scalar_one_or_none()
@@ -99,7 +123,7 @@ async def process_payment(
 
     # Model inference
     try:
-        fraud_score = get_model_loader().predict(features)
+        fraud_score = await asyncio.to_thread(get_model_loader().predict, features)
     except Exception as e:
         logger.error(f"Inference engine failure: {str(e)}")
         raise HTTPException(
@@ -113,6 +137,7 @@ async def process_payment(
     
     # Persist transaction
     txn = Transaction(
+        idempotency_key=idempotency_key,
         user_id=current_user.id,
         merchant_id=merchant.id,
         amount=amount,
@@ -129,8 +154,19 @@ async def process_payment(
     )
     
     db.add(txn)
-    await db.commit()
-    await db.refresh(txn)
+    try:
+        await db.commit()
+        await db.refresh(txn)
+    except IntegrityError:
+        await db.rollback()
+        # Fallback to fetch from another concurrent request
+        existing_result = await db.execute(
+            select(Transaction).where(
+                Transaction.idempotency_key == idempotency_key,
+                Transaction.user_id == current_user.id
+            )
+        )
+        txn = existing_result.scalar_one()
 
     # Response
     message = "Payment blocked due to suspected fraud." if is_fraud else "Payment approved."

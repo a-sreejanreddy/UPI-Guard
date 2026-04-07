@@ -16,6 +16,7 @@ from app.db.session import get_db
 from app.schemas.merchant import MerchantCreateSchema, MerchantResponseSchema
 from app.schemas.user import AdminUserCreateSchema, UserResponseSchema
 from app.schemas.transaction import TransactionResponseSchema, OverrideResponseSchema
+from app.api.transactions import _denormalize_transactions
 
 router = APIRouter(dependencies=[Depends(require_role("admin"))])
 
@@ -138,14 +139,7 @@ async def list_transactions(
     )
     txns = result.scalars().all()
     
-    for t in txns:
-        if t.merchant:
-            t.merchant_upi = t.merchant.upi_id
-            t.merchant_name = t.merchant.business_name
-        if t.user:
-            t.user_name = t.user.name
-            
-    return txns
+    return _denormalize_transactions(txns)
 
 
 @router.post("/transactions/{transaction_id}/override", response_model=OverrideResponseSchema, summary="Admin override blocked fraud")

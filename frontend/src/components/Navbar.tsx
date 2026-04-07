@@ -1,19 +1,21 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import apiClient from "../api/client";
 
 export function Navbar() {
-  const { isAuthenticated, role, logout } = useAuthStore();
+  const { isAuthenticated, user, logout } = useAuthStore();
+  const role = user?.role;
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     try {
-      await apiClient.post("/auth/logout");
-    } catch {
-      // Force local logout even if server fails
-    } finally {
-      logout();
+      await logout();
       navigate("/login");
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -32,9 +34,10 @@ export function Navbar() {
                 {role === "user" && <span className="text-sm font-medium">User Dashboard</span>}
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-2 border rounded text-sm hover:bg-gray-50 text-gray-700"
+                  disabled={isLoggingOut}
+                  className="px-3 py-2 border rounded text-sm hover:bg-gray-50 text-gray-700 disabled:opacity-50"
                 >
-                  Logout
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </button>
               </>
             ) : (

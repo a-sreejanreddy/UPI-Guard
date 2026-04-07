@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import apiClient from "../api/client";
 
 export type Role = "admin" | "merchant" | "user";
 
@@ -12,20 +13,26 @@ export interface User {
 
 interface AuthState {
   user: User | null;
-  role: Role | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, role: Role) => void;
-  logout: () => void;
+  setAuth: (user: User) => void;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      role: null,
       isAuthenticated: false,
-      setAuth: (user, role) => set({ user, role, isAuthenticated: true }),
-      logout: () => set({ user: null, role: null, isAuthenticated: false }),
+      setAuth: (user) => set({ user, isAuthenticated: true }),
+      logout: async () => {
+        try {
+          await apiClient.post("/auth/logout");
+        } catch (error) {
+          console.error("Logout failed:", error);
+        } finally {
+          set({ user: null, isAuthenticated: false });
+        }
+      },
     }),
     {
       name: "auth-storage",

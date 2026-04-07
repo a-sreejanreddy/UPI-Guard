@@ -101,7 +101,7 @@
 ---
 
 ### Phase 4: Transaction & Fraud Inference API
-**Status**: Not Started
+**Status**: ✅ Complete
 **Objective**: Real-time fraud inference on incoming payments, comprehensive logging, admin override.
 
 **Deliverables:**
@@ -122,14 +122,14 @@
 - In BOTH cases: write full transaction row to DB
 
 **Tasks:**
-- [ ] Write feature extractor service (decomposes timestamp, encodes state/category/zip)
-- [ ] Write inference service (wraps model.predict, returns float fraud_score)
-- [ ] Implement POST /transactions/pay (role=user required)
-- [ ] Write transaction DB write for APPROVED and BLOCKED_FRAUD paths
-- [ ] Implement GET /transactions/my
-- [ ] Implement GET /transactions/merchant/{merchant_id} (role=merchant required)
-- [ ] Implement GET /admin/transactions (role=admin, all columns returned)
-- [ ] Implement POST /admin/transactions/{id}/override (sets status, records admin_id + timestamp)
+- [x] Write feature extractor service (decomposes timestamp, encodes state/category/zip)
+- [x] Write inference service (wraps model.predict, returns float fraud_score)
+- [x] Implement POST /transactions/pay (role=user required)
+- [x] Write transaction DB write for APPROVED and BLOCKED_FRAUD paths
+- [x] Implement GET /transactions/my
+- [x] Implement GET /transactions/merchant/{merchant_id} (role=merchant required)
+- [x] Implement GET /admin/transactions (role=admin, all columns returned)
+- [x] Implement POST /admin/transactions/{id}/override (sets status, records admin_id + timestamp)
 
 ---
 

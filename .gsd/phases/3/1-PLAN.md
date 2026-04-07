@@ -28,7 +28,7 @@ Implement OTP authentication endpoints to support login and mock SMS retrieval, 
     - POST /logout: Uses clear_auth_cookie() and returns a confirmation message.
     - GET /me: Uses get_current_user dependency to verify token and return UserResponseSchema.
   </action>
-  <verify>python -c "from app.api.auth import router; assert '/verify-otp' in [r.path for r in router.routes]"</verify>
+  <verify>cd backend && python -c "from app.api.auth import router; assert '/verify-otp' in [r.path for r in router.routes]"</verify>
   <done>Router has all 5 required endpoints correctly scoped.</done>
 </task>
 
@@ -39,7 +39,7 @@ Implement OTP authentication endpoints to support login and mock SMS retrieval, 
     - Include `auth.router` with prefix `/auth` and tags `["auth"]`.
     - In `_seed_admin()`, after creating the admin User, generate a mock OTP (e.g., '123456'), hash it, and create an OtpSession for the admin so we can immediately call `/verify-otp`.
   </action>
-  <verify>python -c "from app.main import app; assert '/auth/me' in [r.path for r in app.routes]"</verify>
+  <verify>cd backend && python -c "from app.main import app; assert '/auth/me' in [r.path for r in app.routes]"</verify>
   <done>The `/auth` endpoints are active in the app and the admin seeding process includes an initial OTP.</done>
 </task>
 

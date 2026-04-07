@@ -27,7 +27,7 @@ Implement admin management capabilities to create/onboard users and merchants, a
     - GET /merchants: Returns list of MerchantResponseSchema. Ensure joining or mapping to populate `user_name` and `user_mobile` from the User table into the response.
     - POST /merchants: Accepts MerchantCreateSchema. Look up User by `user_mobile`. If user doesn't exist, return 404. Else create Merchant linked to user's id. Returns MerchantResponseSchema (also populated). Ensure 'upi_id' uniqueness constraint correctly handled.
   </action>
-  <verify>python -c "from app.api.admin import router; assert '/users' in [r.path for r in router.routes]"</verify>
+  <verify>cd backend && python -c "from app.api.admin import router; assert '/users' in [r.path for r in router.routes]"</verify>
   <done>Admin router exposes user and merchant creation and listing endpoints.</done>
 </task>
 
@@ -37,7 +37,7 @@ Implement admin management capabilities to create/onboard users and merchants, a
   <action>
     - Include `admin.router` with prefix `/admin` and tags `["admin"]`.
   </action>
-  <verify>python -c "from app.main import app; assert '/admin/users' in [r.path for r in app.routes]"</verify>
+  <verify>cd backend && python -c "from app.main import app; assert '/admin/users' in [r.path for r in app.routes]"</verify>
   <done>The `/admin` endpoints are active in the FastAPI app.</done>
 </task>
 

@@ -34,17 +34,18 @@ async def create_user(payload: AdminUserCreateSchema, db: AsyncSession = Depends
             detail="User with this mobile number already exists."
         )
 
-    user = User(**payload.model_dump())
+    user_data = payload.model_dump(exclude={"role"})
+    user = User(**user_data, role=UserRole.user)
     db.add(user)
     try:
         await db.commit()
         await db.refresh(user)
-    except IntegrityError:
+    except IntegrityError as e:
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this mobile number already exists."
-        )
+        ) from e
     return user
 
 
@@ -103,12 +104,12 @@ async def create_merchant(payload: MerchantCreateSchema, db: AsyncSession = Depe
     try:
         await db.commit()
         await db.refresh(merchant)
-    except IntegrityError:
+    except IntegrityError as e:
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="UPI ID or user_id already in use."
-        )
+        ) from e
     
     # Attach denormalized fields so the response validates
     merchant.user_name = user.name

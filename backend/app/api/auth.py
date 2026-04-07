@@ -106,13 +106,8 @@ async def verify_otp(
     payload: OtpVerifySchema, response: Response, db: AsyncSession = Depends(get_db)
 ):
     """
-    Verify the OTP hash. If valid, set httpOnly cookie and return JWT info.
-    If the user does not exist, they should be created ONLY if they are an admin or pre-approved,
-    BUT wait! The roadmap says 'auto-activate' or 'public user' doesn't matter, we create public Users?
-    Let's check the spec: "Users log in using their Mobile Number... If the User is new, we create."
-    Actually the spec said "Option C... Users log in using Mobile Number... if new... wait"
-    Wait, in `schemas/user.py` we have `UserCreateSchema` without role, which means new users are created as `user` role.
-    Let's implement creating a missing User with default values if they don't exist.
+    Validate the OTP hash, set an httpOnly cookie, and return JWT information.
+    If the user does not exist, create a new User with default values and a 'user' role.
     """
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     result = await db.execute(

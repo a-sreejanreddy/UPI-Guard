@@ -3,18 +3,20 @@ app/api/transactions.py — Transactions and Payment endpoints
 """
 from datetime import datetime, timezone
 import logging
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.db.models import (
     Merchant,
     Transaction,
     TransactionStatus,
     User,
+    UserRole,
     STATE_CODE_MAP,
     MERCHANT_CATEGORY_MAP
 )
@@ -129,3 +131,69 @@ async def process_payment(
         merchant_upi=merchant.upi_id,
         message=message
     )
+
+
+@router.get("/my", response_model=List[TransactionResponseSchema], summary="View my transaction history")
+async def get_my_transactions(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Transaction)
+        .options(selectinload(Transaction.merchant), selectinload(Transaction.user))
+        .where(Transaction.user_id == current_user.id)
+        .order_by(Transaction.created_at.desc())
+    )
+    txns = result.scalars().all()
+    
+    # Denormalize UI requirements before Pydantic resolves them
+    for t in txns:
+        if t.merchant:
+            t.merchant_upi = t.merchant.upi_id
+            t.merchant_name = t.merchant.business_name
+        if t.user:
+            t.user_name = t.user.name
+            
+    return txns
+
+
+@router.get("/merchant/{merchant_id}", response_model=List[TransactionResponseSchema], summary="View merchant received transactions")
+async def get_merchant_transactions(
+    merchant_id: int,
+    current_user: User = Depends(require_role("merchant")),
+    db: AsyncSession = Depends(get_db)
+):
+    # Verify ownership of this merchant ID
+    merchant_result = await db.execute(
+        select(Merchant).where(Merchant.id == merchant_id)
+    )
+    merchant = merchant_result.scalar_one_or_none()
+    
+    if not merchant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Merchant not found"
+        )
+        
+    if merchant.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this merchant's transactions"
+        )
+        
+    result = await db.execute(
+        select(Transaction)
+        .options(selectinload(Transaction.merchant), selectinload(Transaction.user))
+        .where(Transaction.merchant_id == merchant_id)
+        .order_by(Transaction.created_at.desc())
+    )
+    txns = result.scalars().all()
+    
+    for t in txns:
+        if t.merchant:
+            t.merchant_upi = t.merchant.upi_id
+            t.merchant_name = t.merchant.business_name
+        if t.user:
+            t.user_name = t.user.name
+            
+    return txns

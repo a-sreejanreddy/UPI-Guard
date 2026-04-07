@@ -6,10 +6,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.core.security import require_role
-from app.db.models import Merchant, User
+from app.db.models import Merchant, User, UserRole
 from app.db.session import get_db
 from app.schemas.merchant import MerchantCreateSchema, MerchantResponseSchema
 from app.schemas.user import AdminUserCreateSchema, UserResponseSchema
@@ -35,8 +36,15 @@ async def create_user(payload: AdminUserCreateSchema, db: AsyncSession = Depends
 
     user = User(**payload.model_dump())
     db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    try:
+        await db.commit()
+        await db.refresh(user)
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this mobile number already exists."
+        )
     return user
 
 
@@ -89,9 +97,18 @@ async def create_merchant(payload: MerchantCreateSchema, db: AsyncSession = Depe
         business_name=payload.business_name,
         category=payload.category
     )
+    user.role = UserRole.merchant
     db.add(merchant)
-    await db.commit()
-    await db.refresh(merchant)
+    db.add(user)
+    try:
+        await db.commit()
+        await db.refresh(merchant)
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="UPI ID or user_id already in use."
+        )
     
     # Attach denormalized fields so the response validates
     merchant.user_name = user.name

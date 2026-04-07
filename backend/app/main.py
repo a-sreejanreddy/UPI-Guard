@@ -51,27 +51,32 @@ async def _seed_admin() -> None:
             session.add(admin)
             await session.commit()
             
-            # Pre-seed a mock OTP so the user can easily log in without sending one
-            from datetime import timedelta
-            from app.core.security import get_password_hash
-            from app.db.models import OtpSession
-            
-            plain_otp = "123456"
-            hashed_otp = get_password_hash(plain_otp)
-            expires = datetime.now(timezone.utc) + timedelta(days=365) # long expiry for demo
-            
-            otp_session = OtpSession(
-                mobile=settings.ADMIN_MOBILE,
-                otp_hash=hashed_otp,
-                otp_plain=plain_otp,
-                expires_at=expires.replace(tzinfo=None),
-                used=False
-            )
-            session.add(otp_session)
-            await session.commit()
-            
-            _masked = "*" * (len(settings.ADMIN_MOBILE) - 4) + settings.ADMIN_MOBILE[-4:]
-            print(f"[DB] Admin seeded  : mobile={_masked}, role=admin, demo_otp={plain_otp}")
+            # Pre-seed a demo OTP if local demo config is set
+            if getattr(settings, "LOCAL_DEMO_SEED", False):
+                import secrets
+                from datetime import timedelta
+                from app.core.security import get_password_hash
+                from app.db.models import OtpSession
+                
+                plain_otp = str(secrets.randbelow(10**settings.OTP_LENGTH)).zfill(settings.OTP_LENGTH)
+                hashed_otp = get_password_hash(plain_otp)
+                expires = datetime.now(timezone.utc) + timedelta(seconds=settings.OTP_TTL_SECONDS)
+                
+                otp_session = OtpSession(
+                    mobile=settings.ADMIN_MOBILE,
+                    otp_hash=hashed_otp,
+                    otp_plain="hidden",
+                    expires_at=expires.replace(tzinfo=None),
+                    used=False
+                )
+                session.add(otp_session)
+                await session.commit()
+                
+                _masked = "*" * (len(settings.ADMIN_MOBILE) - 4) + settings.ADMIN_MOBILE[-4:]
+                print(f"[DB] Admin seeded  : mobile={_masked}, role=admin, demo_otp=created")
+            else:
+                _masked = "*" * (len(settings.ADMIN_MOBILE) - 4) + settings.ADMIN_MOBILE[-4:]
+                print(f"[DB] Admin seeded  : mobile={_masked}, role=admin")
         else:
             print("[DB] Admin exists  : skipping seed")
 

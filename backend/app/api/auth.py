@@ -1,7 +1,7 @@
 """
 app/api/auth.py — Authentication endpoints
 """
-import random
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -41,10 +41,8 @@ async def request_otp(
     mobile = payload.mobile
 
     # In a real app we'd trigger an SMS provider here.
-    # For this demo, generate a random 6-digit OTP.
-    plain_otp = f"{random.randint(0, 999999):0length}".replace("length", str(settings.OTP_LENGTH))
-    # Python zero-padding fix:
-    plain_otp = f"{random.randint(0, 10**settings.OTP_LENGTH - 1)}".zfill(settings.OTP_LENGTH)
+    # For this demo, generate a secure random 6-digit OTP.
+    plain_otp = str(secrets.randbelow(10**settings.OTP_LENGTH)).zfill(settings.OTP_LENGTH)
 
     hashed_otp = get_password_hash(plain_otp)
     expires = datetime.now(timezone.utc) + timedelta(seconds=settings.OTP_TTL_SECONDS)
@@ -77,6 +75,9 @@ async def get_otp_inbox(mobile: str, db: AsyncSession = Depends(get_db)):
     Retrieve the latest unexpired OTP in plaintext.
     Used ONLY for the demo UI to simulate an SMS inbox.
     """
+    if getattr(settings, "ENABLE_MOCK_SMS", True) is False:
+        raise HTTPException(status_code=403, detail="Mock SMS inbox is disabled")
+
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     result = await db.execute(
         select(OtpSession)
@@ -130,8 +131,20 @@ async def verify_otp(
             detail="Invalid or expired OTP",
         )
 
-    # Mark OTP as used
-    otp_session.used = True
+    # Atomic conditional update to mark OTP as used
+    update_result = await db.execute(
+        update(OtpSession)
+        .where(OtpSession.id == otp_session.id)
+        .where(OtpSession.used == False)
+        .values(used=True)
+    )
+    if update_result.rowcount == 0:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="OTP already used or expired concurrently",
+        )
+        
     await db.commit()
 
     # Find User

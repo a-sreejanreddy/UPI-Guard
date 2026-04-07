@@ -35,15 +35,18 @@ logger = logging.getLogger(__name__)
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-def _denormalize_transactions(txns: list[Transaction]) -> list[Transaction]:
-    """Helper to attach user and merchant UI names to the response."""
+def _denormalize_transactions(txns: list[Transaction]) -> list[TransactionResponseSchema]:
+    """Helper to attach user and merchant UI names to the response DTOs."""
+    dtos = []
     for t in txns:
+        dto = TransactionResponseSchema.model_validate(t)
         if t.merchant:
-            t.merchant_upi = t.merchant.upi_id
-            t.merchant_name = t.merchant.business_name
+            dto.merchant_upi = t.merchant.upi_id
+            dto.merchant_name = t.merchant.business_name
         if t.user:
-            t.user_name = t.user.name
-    return txns
+            dto.user_name = t.user.name
+        dtos.append(dto)
+    return dtos
 
 @router.post("/pay", response_model=PaymentResponseSchema, summary="Execute a payment with fraud inference")
 async def process_payment(
@@ -67,8 +70,15 @@ async def process_payment(
         conflict = False
         if existing_txn.amount != payload.amount:
             conflict = True
-        elif existing_txn.merchant and existing_txn.merchant.upi_id != payload.merchant_upi:
-            conflict = True
+            
+        if existing_txn.merchant:
+            if existing_txn.merchant.upi_id != payload.merchant_upi:
+                conflict = True
+        else:
+            m_res = await db.execute(select(Merchant.id).where(Merchant.upi_id == payload.merchant_upi))
+            m_id = m_res.scalar_one_or_none()
+            if m_id != existing_txn.merchant_id:
+                conflict = True
 
         if conflict:
             raise HTTPException(
@@ -139,7 +149,7 @@ async def process_payment(
     try:
         fraud_score = await asyncio.to_thread(get_model_loader().predict, features)
     except Exception as e:
-        logger.error(f"Inference engine failure: {str(e)}")
+        logger.error(f"Inference engine failure: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Fraud engine unavailable"
@@ -177,7 +187,8 @@ async def process_payment(
         # Check if the error is actually due to idempotency collision
         error_msg = str(e.orig).lower() if e.orig else ""
         if "idempotenc" not in error_msg:
-            raise
+            logger.exception(e)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database constraint error")
             
         # Fallback to fetch from another concurrent request
         existing_result = await db.execute(
@@ -190,7 +201,8 @@ async def process_payment(
         
         # If no txn was found, another constraints triggered the error, re-raise original
         if not txn:
-            raise
+            logger.exception(e)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database constraint error")
             
         msg = "Payment blocked due to suspected fraud." if txn.status == TransactionStatus.BLOCKED_FRAUD else "Payment approved."
         merchant_upi = txn.merchant.upi_id if txn.merchant else ""

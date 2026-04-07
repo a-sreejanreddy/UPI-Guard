@@ -148,17 +148,17 @@
 - Shared components: Layout, Navbar (role-aware links), LoadingSpinner, ErrorBoundary
 
 **Tasks:**
-- [ ] npx create-vite frontend --template react-ts
-- [ ] Install Tailwind CSS and configure (postcss, tailwind.config)
-- [ ] Install: react-router-dom, zustand, @tanstack/react-query, axios,
+- [x] npx create-vite frontend --template react-ts
+- [x] Install Tailwind CSS and configure (postcss, tailwind.config)
+- [x] Install: react-router-dom, zustand, @tanstack/react-query, axios,
       react-hook-form, @hookform/resolvers, zod, qrcode.react, @types/qrcode.react
-- [ ] Create Zustand auth store with localStorage persist
-- [ ] Create Axios client instance with withCredentials
-- [ ] Wrap main.tsx with QueryClientProvider and BrowserRouter
-- [ ] Define route constants and full route tree
-- [ ] Build ProtectedRoute (role-aware redirect)
-- [ ] Build Layout + Navbar components (links conditional on role)
-- [ ] Build LoadingSpinner and ErrorBoundary
+- [x] Create Zustand auth store with localStorage persist
+- [x] Create Axios client instance with withCredentials
+- [x] Wrap main.tsx with QueryClientProvider and BrowserRouter
+- [x] Define route constants and full route tree
+- [x] Build ProtectedRoute (role-aware redirect)
+- [x] Build Layout + Navbar components (links conditional on role)
+- [x] Build LoadingSpinner and ErrorBoundary
 
 ---
 

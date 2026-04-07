@@ -63,6 +63,19 @@ async def process_payment(
     )
     existing_txn = existing_result.scalar_one_or_none()
     if existing_txn:
+        # Validate that the incoming payload matches the stored transaction
+        conflict = False
+        if existing_txn.amount != payload.amount:
+            conflict = True
+        elif existing_txn.merchant and existing_txn.merchant.upi_id != payload.merchant_upi:
+            conflict = True
+
+        if conflict:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Idempotency payload mismatch: previous transaction had different details"
+            )
+
         msg = "Payment blocked due to suspected fraud." if existing_txn.status == TransactionStatus.BLOCKED_FRAUD else "Payment approved."
         merchant_upi = existing_txn.merchant.upi_id if existing_txn.merchant else ""
         return PaymentResponseSchema(
@@ -158,8 +171,14 @@ async def process_payment(
     try:
         await db.commit()
         await db.refresh(txn)
-    except IntegrityError:
+    except IntegrityError as e:
         await db.rollback()
+        
+        # Check if the error is actually due to idempotency collision
+        error_msg = str(e.orig).lower() if e.orig else ""
+        if "idempotenc" not in error_msg:
+            raise
+            
         # Fallback to fetch from another concurrent request
         existing_result = await db.execute(
             select(Transaction).options(selectinload(Transaction.merchant)).where(
@@ -167,7 +186,12 @@ async def process_payment(
                 Transaction.user_id == current_user.id
             )
         )
-        txn = existing_result.scalar_one()
+        txn = existing_result.scalar_one_or_none()
+        
+        # If no txn was found, another constraints triggered the error, re-raise original
+        if not txn:
+            raise
+            
         msg = "Payment blocked due to suspected fraud." if txn.status == TransactionStatus.BLOCKED_FRAUD else "Payment approved."
         merchant_upi = txn.merchant.upi_id if txn.merchant else ""
         return PaymentResponseSchema(

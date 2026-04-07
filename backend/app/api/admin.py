@@ -1,19 +1,22 @@
 """
 app/api/admin.py — Admin CRUD endpoints
 """
+from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.core.security import require_role
-from app.db.models import Merchant, User, UserRole
+from app.db.models import Merchant, Transaction, TransactionStatus, User, UserRole
 from app.db.session import get_db
 from app.schemas.merchant import MerchantCreateSchema, MerchantResponseSchema
 from app.schemas.user import AdminUserCreateSchema, UserResponseSchema
+from app.schemas.transaction import TransactionResponseSchema, OverrideResponseSchema
+from app.api.transactions import _denormalize_transactions
 
 router = APIRouter(dependencies=[Depends(require_role("admin"))])
 
@@ -120,3 +123,66 @@ async def create_merchant(payload: MerchantCreateSchema, db: AsyncSession = Depe
     merchant.user_mobile = user.mobile
     
     return merchant
+
+
+@router.get("/transactions", response_model=List[TransactionResponseSchema], summary="Audit all transactions")
+async def list_transactions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Transaction)
+        .options(selectinload(Transaction.merchant), selectinload(Transaction.user))
+        .order_by(Transaction.created_at.desc())
+        .offset(skip).limit(limit)
+    )
+    txns = result.scalars().all()
+    
+    return _denormalize_transactions(txns)
+
+
+@router.post("/transactions/{transaction_id}/override", response_model=OverrideResponseSchema, summary="Admin override blocked fraud")
+async def override_transaction(
+    transaction_id: int,
+    current_user: User = Depends(require_role("admin")),
+    db: AsyncSession = Depends(get_db)
+):
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    update_result = await db.execute(
+        update(Transaction)
+        .where(Transaction.id == transaction_id)
+        .where(Transaction.status == TransactionStatus.BLOCKED_FRAUD)
+        .values(
+            status=TransactionStatus.ADMIN_OVERRIDDEN,
+            override_by_admin_id=current_user.id,
+            override_at=now
+        )
+    )
+    
+    if update_result.rowcount == 0:
+        result = await db.execute(select(Transaction).where(Transaction.id == transaction_id))
+        txn = result.scalar_one_or_none()
+        
+        if not txn:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Transaction not found"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot override transaction with status: {txn.status}"
+            )
+            
+    await db.commit()
+    
+    result = await db.execute(select(Transaction).where(Transaction.id == transaction_id))
+    txn = result.scalar_one()
+    
+    return OverrideResponseSchema(
+        transaction_id=txn.id,
+        previous_status=TransactionStatus.BLOCKED_FRAUD,
+        new_status=txn.status,
+        message="Transaction approved by admin override"
+    )

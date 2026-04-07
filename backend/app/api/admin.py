@@ -3,7 +3,7 @@ app/api/admin.py — Admin CRUD endpoints
 """
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -19,8 +19,12 @@ router = APIRouter(dependencies=[Depends(require_role("admin"))])
 
 
 @router.get("/users", response_model=List[UserResponseSchema], summary="List all users")
-async def list_users(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).order_by(User.created_at.desc()))
+async def list_users(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(User).order_by(User.created_at.desc()).offset(skip).limit(limit))
     return result.scalars().all()
 
 

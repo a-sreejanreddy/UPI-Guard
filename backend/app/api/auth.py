@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
 from app.core.security import (
@@ -51,7 +52,7 @@ async def request_otp(
     await db.execute(
         update(OtpSession)
         .where(OtpSession.mobile == mobile)
-        .where(OtpSession.used == False)
+        .where(OtpSession.used.is_(False))
         .values(used=True)
     )
 
@@ -75,14 +76,14 @@ async def get_otp_inbox(mobile: str, db: AsyncSession = Depends(get_db)):
     Retrieve the latest unexpired OTP in plaintext.
     Used ONLY for the demo UI to simulate an SMS inbox.
     """
-    if getattr(settings, "ENABLE_MOCK_SMS", True) is False:
+    if not getattr(settings, "ENABLE_MOCK_SMS", False):
         raise HTTPException(status_code=403, detail="Mock SMS inbox is disabled")
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     result = await db.execute(
         select(OtpSession)
         .where(OtpSession.mobile == mobile)
-        .where(OtpSession.used == False)
+        .where(OtpSession.used.is_(False))
         .where(OtpSession.expires_at > now)
         .order_by(OtpSession.created_at.desc())
         .limit(1)
@@ -113,7 +114,7 @@ async def verify_otp(
     result = await db.execute(
         select(OtpSession)
         .where(OtpSession.mobile == payload.mobile)
-        .where(OtpSession.used == False)
+        .where(OtpSession.used.is_(False))
         .where(OtpSession.expires_at > now)
         .order_by(OtpSession.created_at.desc())
         .limit(1)
@@ -130,7 +131,7 @@ async def verify_otp(
     update_result = await db.execute(
         update(OtpSession)
         .where(OtpSession.id == otp_session.id)
-        .where(OtpSession.used == False)
+        .where(OtpSession.used.is_(False))
         .values(used=True)
     )
     if update_result.rowcount == 0:
@@ -157,8 +158,13 @@ async def verify_otp(
             zip_code="000000",
         )
         db.add(user)
-        await db.commit()
-        await db.refresh(user)
+        try:
+            await db.commit()
+            await db.refresh(user)
+        except IntegrityError:
+            await db.rollback()
+            user_result = await db.execute(select(User).where(User.mobile == payload.mobile))
+            user = user_result.scalar_one()
     elif not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

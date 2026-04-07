@@ -71,7 +71,7 @@
 ---
 
 ### Phase 3: Auth & User Management API
-**Status**: Not Started
+**Status**: Complete
 **Objective**: Complete authentication system and admin user/merchant management endpoints.
 
 **Deliverables:**
@@ -87,16 +87,16 @@
 - JWT dependency functions: get_current_user, require_role(role)
 
 **Tasks:**
-- [ ] Write JWT utils: create_access_token, decode_token, set_jwt_cookie, clear_jwt_cookie
-- [ ] Write get_current_user dependency (reads JWT from cookie, decodes, returns user)
-- [ ] Write require_role(role) dependency factory
-- [ ] Implement /auth/request-otp (hash OTP with bcrypt, store with expiry)
-- [ ] Implement /auth/otp-inbox/{mobile} (lookup latest unused, unexpired OTP)
-- [ ] Implement /auth/verify-otp (verify hash, mark used, set cookie, return role)
-- [ ] Implement /auth/logout (delete cookie)
-- [ ] Implement /auth/me (return user from JWT)
-- [ ] Implement admin user CRUD endpoints with role guard
-- [ ] Seed admin on first startup (mobile: 9999999999, auto-generate first OTP)
+- [x] Write JWT utils: create_access_token, decode_token, set_jwt_cookie, clear_jwt_cookie
+- [x] Write get_current_user dependency (reads JWT from cookie, decodes, returns user)
+- [x] Write require_role(role) dependency factory
+- [x] Implement /auth/request-otp (hash OTP with bcrypt, store with expiry)
+- [x] Implement /auth/otp-inbox/{mobile} (lookup latest unused, unexpired OTP)
+- [x] Implement /auth/verify-otp (verify hash, mark used, set cookie, return role)
+- [x] Implement /auth/logout (delete cookie)
+- [x] Implement /auth/me (return user from JWT)
+- [x] Implement admin user CRUD endpoints with role guard
+- [x] Seed admin on first startup (mobile: 9999999999, auto-generate first OTP)
 
 ---
 

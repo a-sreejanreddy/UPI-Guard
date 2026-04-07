@@ -50,7 +50,8 @@ async def _seed_admin() -> None:
             )
             session.add(admin)
             await session.commit()
-            print(f"[DB] Admin seeded  : mobile={settings.ADMIN_MOBILE}, role=admin")
+            _masked = "*" * (len(settings.ADMIN_MOBILE) - 4) + settings.ADMIN_MOBILE[-4:]
+            print(f"[DB] Admin seeded  : mobile={_masked}, role=admin")
         else:
             print("[DB] Admin exists  : skipping seed")
 

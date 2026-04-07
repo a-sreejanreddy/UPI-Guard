@@ -12,6 +12,7 @@ Usage:
     # In route handler:
     score = get_model_loader().predict([hour, day, month, year, cat, amount, age, state, zip])
 """
+import hashlib
 import os
 import pickle
 import pathlib
@@ -22,6 +23,8 @@ import numpy as np
 
 # Suppress TensorFlow verbose output
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+
+_EXPECTED_FEATURE_COUNT = 9
 
 
 @dataclass
@@ -56,6 +59,27 @@ class ModelLoader:
             )
 
         self.model  = tf.keras.models.load_model(str(model_p))
+
+        # Verify scaler checksum before deserializing (prevents loading tampered artifacts)
+        digest_path = scaler_p.with_suffix(".pkl.sha256")
+        scaler_bytes = scaler_p.read_bytes()
+        actual_digest = hashlib.sha256(scaler_bytes).hexdigest()
+
+        if digest_path.exists():
+            expected_digest = digest_path.read_text(encoding="utf-8").strip()
+            if actual_digest != expected_digest:
+                raise ValueError(
+                    f"Scaler artifact checksum mismatch!\n"
+                    f"  Expected : {expected_digest}\n"
+                    f"  Actual   : {actual_digest}\n"
+                    f"Do not use — re-run ml_pipeline/train.py to regenerate clean artifacts."
+                )
+            print(f"[ML] Scaler checksum verified (SHA-256 OK)")
+        else:
+            # First run: write the digest so future startups can verify integrity
+            digest_path.write_text(actual_digest, encoding="utf-8")
+            print(f"[ML] Scaler checksum stored  : {digest_path.name}")
+
         with open(scaler_p, "rb") as f:
             self.scaler = pickle.load(f)
 
@@ -79,6 +103,12 @@ class ModelLoader:
         """
         if not self._loaded:
             raise RuntimeError("Model not loaded. Call load() first.")
+        if len(features) != _EXPECTED_FEATURE_COUNT:
+            raise ValueError(
+                f"predict() expects exactly {_EXPECTED_FEATURE_COUNT} features, "
+                f"got {len(features)}. Required order: "
+                "[hour, day, month, year, merchant_category, amount, user_age, state_code, zip_prefix]"
+            )
         arr    = np.array([features], dtype=np.float32)
         scaled = self.scaler.transform(arr)
         score  = float(self.model.predict(scaled, verbose=0)[0][0])

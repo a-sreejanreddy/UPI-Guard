@@ -76,18 +76,17 @@ def set_auth_cookie(response: Response, token: str) -> None:
     """
     Set the JWT as an httpOnly cookie.
 
-    Security notes:
-    - httponly=True  : Inaccessible to JavaScript (XSS protection)
-    - secure=False   : Set to True in production (requires HTTPS)
-    - samesite="lax" : Allows cross-origin GET, blocks cross-origin POST CSRF.
-                       Use "strict" in production behind a reverse proxy.
+    Flags come from settings so they can be overridden per environment:
+    - COOKIE_HTTPONLY  : True always (XSS protection); configurable for tests
+    - COOKIE_SECURE    : False for local HTTP dev; True in production (HTTPS required)
+    - COOKIE_SAMESITE  : "lax" for local dev; "strict" recommended for production
     """
     response.set_cookie(
         key="access_token",
         value=token,
-        httponly=True,
-        secure=False,   # TODO: set True in production
-        samesite="lax", # TODO: consider "strict" behind a proxy in production
+        httponly=settings.COOKIE_HTTPONLY,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
         max_age=settings.JWT_EXPIRE_MINUTES * 60,
         path="/",
     )
@@ -121,7 +120,15 @@ async def get_current_user(
     if user_id_str is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
 
-    result = await db.execute(select(User).where(User.id == int(user_id_str)))
+    try:
+        user_id = int(user_id_str)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload: 'sub' is not a valid user ID",
+        )
+
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")

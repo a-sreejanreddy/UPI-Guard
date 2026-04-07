@@ -70,7 +70,7 @@ class PaymentResponseSchema(BaseModel):
 
 
 class OverrideResponseSchema(BaseModel):
-    transaction_id: int
-    previous_status: str
-    new_status:      str = "ADMIN_OVERRIDDEN"
+    transaction_id:  int
+    previous_status: TransactionStatus
+    new_status:      TransactionStatus = TransactionStatus.ADMIN_OVERRIDDEN
     message:         str = "Transaction approved by admin override"

@@ -15,7 +15,7 @@ class UserCreateSchema(BaseModel):
     age: int
     state: str
     zip_code: str
-    role: UserRole = UserRole.user
+    # role is explicitly excluded here to prevent privilege escalation on signup
 
     @field_validator("age")
     @classmethod
@@ -31,6 +31,10 @@ class UserCreateSchema(BaseModel):
         if not v.isdigit() or len(v) != 10:
             raise ValueError("Mobile must be exactly 10 digits")
         return v
+
+
+class AdminUserCreateSchema(UserCreateSchema):
+    role: UserRole = UserRole.user
 
 
 class UserResponseSchema(BaseModel):

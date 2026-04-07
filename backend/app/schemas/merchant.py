@@ -13,12 +13,30 @@ class MerchantCreateSchema(BaseModel):
     business_name: str
     category:      str   # Must be one of: Food, Retail, Travel, Entertainment, Healthcare, Education, Utilities, Other
 
+    @field_validator("user_mobile")
+    @classmethod
+    def validate_user_mobile(cls, v: str) -> str:
+        v = v.strip()
+        if not v.isdigit() or len(v) != 10:
+            raise ValueError("user_mobile must be exactly 10 digits")
+        return v
+
     @field_validator("upi_id")
     @classmethod
     def upi_format(cls, v: str) -> str:
-        if "@" not in v:
-            raise ValueError("UPI ID must contain @  (e.g. shopname@upi)")
-        return v.lower().strip()
+        v = v.strip().lower()
+        parts = v.split("@")
+        if len(parts) != 2:
+            raise ValueError(
+                "UPI ID must contain exactly one '@'  (e.g. shopname@upi)"
+            )
+        local, handle = parts
+        if not local or not handle:
+            raise ValueError(
+                "UPI ID must be in the format local@handle (e.g. shopname@upi) — "
+                "both local and handle parts must be non-empty"
+            )
+        return v
 
     @field_validator("category")
     @classmethod

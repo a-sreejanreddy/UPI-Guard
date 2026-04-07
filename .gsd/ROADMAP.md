@@ -56,17 +56,17 @@
 - `requirements.txt` with pinned versions
 
 **Tasks:**
-- [ ] Scaffold FastAPI app with lifespan context manager
-- [ ] Define SQLAlchemy async models (users, merchants, transactions, otp_sessions)
-- [ ] Write async DB session dependency (get_db)
-- [ ] DB init: create_all on lifespan startup
-- [ ] Write model loader (singleton, loaded once at startup via lifespan)
-- [ ] Write all Pydantic v2 request/response schemas
-- [ ] Configure CORS (allow React origin, allow credentials=True)
-- [ ] Setup pydantic BaseSettings config from .env
-- [ ] Write requirements.txt (fastapi, uvicorn, sqlalchemy, aiosqlite, python-jose,
+- [x] Scaffold FastAPI app with lifespan context manager
+- [x] Define SQLAlchemy async models (users, merchants, transactions, otp_sessions)
+- [x] Write async DB session dependency (get_db)
+- [x] DB init: create_all on lifespan startup
+- [x] Write model loader (singleton, loaded once at startup via lifespan)
+- [x] Write all Pydantic v2 request/response schemas
+- [x] Configure CORS (allow React origin, allow credentials=True)
+- [x] Setup pydantic BaseSettings config from .env
+- [x] Write requirements.txt (fastapi, uvicorn, sqlalchemy, aiosqlite, python-jose,
       passlib, tensorflow, scikit-learn, imbalanced-learn, python-multipart, python-dotenv)
-- [ ] Seed default admin account on first startup (hardcoded mobile for demo)
+- [x] Seed default admin account on first startup (hardcoded mobile for demo)
 
 ---
 

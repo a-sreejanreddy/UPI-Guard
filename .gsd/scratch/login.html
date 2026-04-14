@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - UPI Guard</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Manrope & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#c6c6cd",
+                        "on-tertiary-container": "#009668",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-primary-container": "#7c839b",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "on-surface": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "inverse-primary": "#bec6e0",
+                        "on-secondary-container": "#54647a",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-primary-fixed": "#131b2e",
+                        "secondary": "#505f76",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#dae2fd",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "outline": "#76777d",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-variant": "#e0e3e5",
+                        "on-background": "#191c1e",
+                        "tertiary": "#000000",
+                        "tertiary-container": "#002113",
+                        "on-tertiary-fixed": "#002113",
+                        "background": "#f7f9fb",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-tint": "#565e74",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "surface-bright": "#f7f9fb",
+                        "on-surface-variant": "#45464d",
+                        "surface": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "tertiary-fixed": "#6ffbbe",
+                        "primary": "#000000",
+                        "secondary-fixed": "#d3e4fe",
+                        "primary-container": "#131b2e",
+                        "surface-container-highest": "#e0e3e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+<!-- Atmospheric Background Decoration -->
+<div class="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+<div class="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] rounded-full bg-secondary-fixed/20 blur-[120px]"></div>
+<div class="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] rounded-full bg-primary-fixed/20 blur-[120px]"></div>
+</div>
+<!-- Main Content Shell -->
+<main class="w-full max-w-md z-10">
+<!-- Brand Identity Container -->
+<div class="mb-10 text-center">
+<div class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4 shadow-xl shadow-primary/10">
+<span class="material-symbols-outlined text-on-primary text-3xl" data-icon="shield_with_heart" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+</div>
+<h1 class="text-3xl font-extrabold tracking-tighter text-on-surface">
+                UPI Guard
+            </h1>
+<p class="text-on-surface-variant font-medium mt-2">Atmospheric Security for Modern Banking</p>
+</div>
+<!-- Multi-state Login Container -->
+<div class="bg-surface-container-lowest rounded-full p-8 md:p-10 shadow-xl shadow-on-surface/5 flex flex-col gap-8">
+<!-- STEP 1: Identification (Visible by Default) -->
+<section class="space-y-6" id="identification-step">
+<div class="space-y-2">
+<h2 class="text-xl font-bold text-on-surface">Welcome back</h2>
+<p class="text-sm text-on-surface-variant">Enter your mobile number to receive a secure login code.</p>
+</div>
+<div class="space-y-4">
+<div class="group">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 ml-1">Mobile Number</label>
+<div class="relative flex items-center">
+<span class="absolute left-4 text-on-surface-variant font-semibold border-r border-outline-variant pr-3">+91</span>
+<input class="w-full pl-16 pr-4 py-4 bg-surface-container-highest rounded-full border-none focus:ring-1 focus:ring-primary focus:bg-surface-container-lowest transition-all text-lg font-medium tracking-widest placeholder:text-outline placeholder:tracking-normal" maxlength="10" placeholder="00000 00000" type="tel"/>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-bold py-4 rounded-full shadow-lg hover:bg-primary-container transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                        Send OTP
+                        <span class="material-symbols-outlined text-xl" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- STEP 2: Verification (Hidden for demo structure, shown conceptually) -->
+<!-- In a real app, this would toggle based on state -->
+<section class="space-y-6 border-t border-surface-container-high pt-8" id="otp-step">
+<div class="space-y-2">
+<h2 class="text-xl font-bold text-on-surface">Verify Identity</h2>
+<p class="text-sm text-on-surface-variant">We've sent a 6-digit code to your registered mobile number.</p>
+</div>
+<div class="space-y-8">
+<!-- OTP Grid -->
+<div class="flex justify-between gap-2 md:gap-3">
+<input class="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all" maxlength="1" type="text"/>
+</div>
+<div class="space-y-4">
+<button class="w-full bg-primary text-on-primary font-bold py-4 rounded-full shadow-lg hover:bg-primary-container transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                            Verify &amp; Login
+                            <span class="material-symbols-outlined text-xl" data-icon="lock_open">lock_open</span>
+</button>
+<div class="text-center">
+<button class="text-sm font-semibold text-secondary hover:text-on-secondary-container transition-colors">
+                                Resend code in 0:24
+                            </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer / Support -->
+<footer class="mt-8 text-center space-y-4">
+<div class="flex items-center justify-center gap-6">
+<a class="text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Help Center</a>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-surface" data-alt="professional bank representative smiling in a corporate office environment with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQrtgV9OnJOCk9MOFPP6-rFH7WOdCa8QsadWlDj2Sgb8li49xISVg1vCdpUn_mZooD1GQ17bBLphA7NXdaSCJtm5f-Wknw8A5i3sVJvNBbEYGmVKsauk3Bzjan62wzNfUjYFA_fiMO0fxvB5-V37G9o_1i3kHSRmrsJxI141XYx3V4415JCC4tfrbC-NG4mVAQU3O_uof_xkFZ1xpV4XaLvbBqIHPC9plGPXjObE7tq7kpul5xpdwE2LC4-dAWzUQdKP4L3WQ2Qpw"/>
+<img class="w-6 h-6 rounded-full border-2 border-surface" data-alt="executive banking professional in tailored suit posing for a portrait in a modern high-rise office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAETfu2GQsoZhhKZI-83KjHPsc6IO8Q7h8Bv0ShnQP2ZVfpDj2mZmqsOVbCuE-d6qicD9oo5ZsI7pPw4hjfoJSpH2pemT_c0dKtXQnRDF5lsD83g3NFy56cDB0H0sReqF4AbqJ1U9-2B5CdsYbZ8Re1RhQprJLol3YD5o3xWQsp8nWST5Qj2UuqvWtPQ6T9dXEDOanxwp_YeQbZf-g1CZmO_sQca-O1Ggnei096G0hH9eutVfOLdOygTTOfNcx6Rd11FecVI0euORk"/>
+</div>
+<p class="text-[10px] text-on-surface-variant italic">Trusted by over 2 million secure UPI users nationwide.</p>
+</div>
+</footer>
+</main>
+<!-- Visual Polish: Ghost Graphics -->
+<div class="fixed bottom-0 left-0 p-12 opacity-5 hidden lg:block select-none">
+<span class="material-symbols-outlined text-[200px]" data-icon="fingerprint">fingerprint</span>
+</div>
+<div class="fixed top-0 right-0 p-12 opacity-5 hidden lg:block select-none">
+<span class="material-symbols-outlined text-[200px]" data-icon="security">security</span>
+</div>
+</body></html>

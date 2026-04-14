@@ -17,14 +17,14 @@ Present the output of real-time transactions spanning complete history logs alon
 
 <task type="auto">
   <name>Build Transaction History Display</name>
-  <files>frontend/src/pages/UserDashboard.tsx</files>
+  <files>frontend/src/components/UserDashboard/TransactionTable.tsx</files>
   <action>
     - Utilize `useQuery` fetching `GET /transactions/my`.
     - Represent returned objects logically traversing table layouts structurally mapped with explicit columns: `Merchant`, `Amount`, `Time`, `Status`, `Fraud Score`.
     - Render distinct status badges leveraging color utility mappings (APPROVED = green, BLOCKED_FRAUD = red, ADMIN_OVERRIDDEN = amber).
     - Map `LoadingSpinner` implementations actively guarding loading durations across query sequences.
   </action>
-  <verify>grep "transactions/my" frontend/src/pages/UserDashboard.tsx</verify>
+  <verify>grep "transactions/my" frontend/src/components/UserDashboard/TransactionTable.tsx</verify>
   <done>Audit variables map distinctly representing visual logs successfully outputting tabular boundaries.</done>
 </task>
 

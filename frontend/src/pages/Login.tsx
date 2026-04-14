@@ -56,9 +56,13 @@ export function Login() {
     try {
       const resp = await apiClient.post("/auth/verify-otp", {
         mobile: mobileNumber,
-        code: data.otp,
+        otp: data.otp,
       });
-      const user: User = resp.data.user;
+      const user: User = { 
+        id: resp.data.user_id, 
+        role: resp.data.role, 
+        name: resp.data.name 
+      };
       setAuth(user);
       
       if (user.role === "admin") navigate("/admin");
@@ -77,10 +81,10 @@ export function Login() {
       {/* Atmospheric Background Decoration */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] rounded-full bg-secondary-fixed/20 blur-[120px]"></div>
-        <div class="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] rounded-full bg-primary-fixed/20 blur-[120px]"></div>
+        <div className="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] rounded-full bg-primary-fixed/20 blur-[120px]"></div>
       </div>
 
-      <main class="w-full max-w-md z-10">
+      <main className="w-full max-w-md z-10">
         <div className="mb-10 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4 shadow-xl shadow-primary/10">
             <span className="material-symbols-outlined text-on-primary text-3xl" data-icon="shield_with_heart" style={{fontVariationSettings: "'FILL' 1"}}>shield_with_heart</span>
@@ -180,8 +184,10 @@ export function Login() {
 
         <footer className="mt-8 text-center space-y-4">
           <div className="flex items-center justify-center gap-6">
-            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Privacy Policy</span>
-            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Help Center</span>
+            {/* TODO: Add functional link for Privacy Policy */}
+            <a href="#" className="text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Privacy Policy</a>
+            {/* TODO: Add functional link for Help Center */}
+            <a href="#" className="text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Help Center</a>
           </div>
           <div className="flex flex-col items-center gap-2">
             <p className="text-[10px] text-on-surface-variant italic">Trusted by over 2 million secure UPI users nationwide.</p>

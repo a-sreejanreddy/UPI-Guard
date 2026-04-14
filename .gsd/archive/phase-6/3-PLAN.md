@@ -37,7 +37,7 @@ Construct the core user dashboard view and implement the transaction payment for
     - Apply validation over payload variables.
     - Handle `APPROVED` payloads displaying a robust `toast.success` modal outputting successful routing confirmation.
   </action>
-  <verify>grep "useMutation" frontend/src/pages/UserDashboard.tsx</verify>
+  <verify>grep "useMutation" frontend/src/components/UserDashboard/PaymentForm.tsx</verify>
   <done>Payment mechanisms orchestrate structural calls directing valid monetary vectors directly.</done>
 </task>
 

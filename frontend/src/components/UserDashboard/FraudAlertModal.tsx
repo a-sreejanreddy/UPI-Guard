@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 interface Props {
   score: number;
   reason: string;
@@ -6,15 +8,47 @@ interface Props {
 
 export function FraudAlertModal({ score, reason, onClose }: Props) {
   const percentage = (score * 100).toFixed(1);
+  const prevFocusRef = useRef<HTMLElement | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    prevFocusRef.current = document.activeElement as HTMLElement;
+    btnRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+      if (e.key === "Tab") {
+        // Trapping focus since there's only one focusable element
+        e.preventDefault();
+        btnRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      prevFocusRef.current?.focus();
+    };
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-      <div className="bg-surface-container-lowest rounded-[2rem] max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-error/20">
+      <div 
+        ref={modalRef}
+        role="dialog" 
+        aria-modal="true" 
+        aria-labelledby="fraud-modal-title"
+        className="bg-surface-container-lowest rounded-[2rem] max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-error/20"
+      >
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 rounded-full bg-error-container flex items-center justify-center shrink-0">
              <span className="material-symbols-outlined text-on-error-container text-3xl" data-icon="gpp_bad">gpp_bad</span>
           </div>
           <div>
-            <h2 className="text-2xl font-headline font-extrabold text-error">Access Blocked</h2>
+            <h2 id="fraud-modal-title" className="text-2xl font-headline font-extrabold text-error">Access Blocked</h2>
             <p className="text-on-surface-variant text-sm">Security AI Intervention</p>
           </div>
         </div>
@@ -34,6 +68,7 @@ export function FraudAlertModal({ score, reason, onClose }: Props) {
         </div>
 
         <button 
+          ref={btnRef}
           onClick={onClose}
           className="w-full bg-error text-on-error py-4 rounded-full font-bold shadow-lg hover:bg-[#93000a] transition-all"
         >

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "../../api/client";
 import { LoadingSpinner } from "../LoadingSpinner";
+import { isAxiosError } from "axios";
 
 interface Transaction {
   id: number;
@@ -12,7 +13,7 @@ interface Transaction {
 }
 
 export function TransactionTable() {
-  const { data, isLoading } = useQuery<Transaction[]>({
+  const { data, isLoading, isError, error } = useQuery<Transaction[]>({
     queryKey: ["transactions"],
     queryFn: async () => {
       const resp = await apiClient.get("/transactions/my");
@@ -31,6 +32,10 @@ export function TransactionTable() {
       </div>
       {isLoading ? (
          <div className="py-12"><LoadingSpinner /></div>
+      ) : isError ? (
+        <div className="py-8 text-center text-error font-bold">
+           {isAxiosError(error) ? error.response?.data?.detail || error.message : "Failed to load transactions"}
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -67,22 +72,30 @@ export function TransactionTable() {
                       })}
                     </td>
                     <td className="py-5 px-4">
-                      {txn.status === "APPROVED" && (
+                      {txn.status === "APPROVED" ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-tertiary-container text-on-tertiary-container">
                           <span className="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
                           Approved
                         </span>
-                      )}
-                      {txn.status === "BLOCKED_FRAUD" && (
+                      ) : txn.status === "BLOCKED_FRAUD" ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-error-container text-on-error-container">
                           <span className="w-1.5 h-1.5 rounded-full bg-on-error-container"></span>
                           Blocked (Fraud)
                         </span>
-                      )}
-                      {txn.status === "ADMIN_OVERRIDDEN" && (
+                      ) : txn.status === "PENDING" ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-surface-container-highest text-on-surface-variant">
+                          <span className="w-1.5 h-1.5 rounded-full bg-on-surface-variant animate-pulse"></span>
+                          Pending
+                        </span>
+                      ) : txn.status === "ADMIN_OVERRIDDEN" ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-secondary-container text-on-secondary-container">
                           <span className="w-1.5 h-1.5 rounded-full bg-on-secondary-container"></span>
                           Overridden
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-surface-container text-on-surface">
+                          <span className="w-1.5 h-1.5 rounded-full bg-on-surface"></span>
+                          {txn.status}
                         </span>
                       )}
                     </td>

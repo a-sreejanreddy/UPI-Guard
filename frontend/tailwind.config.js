@@ -60,13 +60,12 @@ export default {
         "DEFAULT": "0.125rem",
         "lg": "0.25rem",
         "xl": "0.5rem",
-        "full": "0.75rem"
+        "2xl": "0.75rem"
       },
       fontFamily: {
         "headline": ["Manrope", "sans-serif"],
         "body": ["Inter", "sans-serif"],
-        "label": ["Inter", "sans-serif"],
-        "manrope": ["Manrope", "sans-serif"]
+        "label": ["Inter", "sans-serif"]
       }
     },
   },

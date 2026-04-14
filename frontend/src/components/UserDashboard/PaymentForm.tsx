@@ -4,15 +4,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import apiClient from "../../api/client";
+import { isAxiosError } from "axios";
 
 const paymentSchema = z.object({
   merchant_upi: z.string().min(3, "Required"),
   amount: z.number().positive(),
-  device_id: z.string(),
-  ip_address: z.string(),
+  device_id: z.string().min(8, "Device ID too short").max(64, "Device ID too long").regex(/^[A-Za-z0-9-_]+$/, "Invalid Device ID format"),
+  ip_address: z.string().ip("Invalid IP address format"),
 });
 
 type PaymentFormType = z.infer<typeof paymentSchema>;
+
+interface PaymentResponse {
+  status: "APPROVED" | "BLOCKED_FRAUD" | "PENDING";
+  fraud_score: number;
+  message?: string;
+  amount: number;
+  merchant_upi: string;
+}
 
 interface Props {
   deviceData: { device_id: string, ip_address: string };
@@ -33,22 +42,25 @@ export function PaymentForm({ deviceData, onFraudDetected }: Props) {
   const payMutation = useMutation({
     mutationFn: async (data: PaymentFormType) => {
       const res = await apiClient.post("/transactions/pay", data);
-      return res.data;
+      return res.data as PaymentResponse;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: PaymentResponse) => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       if (data.status === "APPROVED") {
         toast.success(`Sent ₹${data.amount} to ${data.merchant_upi}`);
         reset({ ...deviceData, amount: 0, merchant_upi: "" });
       } else if (data.status === "BLOCKED_FRAUD") {
-        onFraudDetected(data.fraud_score, data.fraud_reason || "Unusual transaction pattern detected.");
+        onFraudDetected(data.fraud_score, data.message || "Unusual transaction pattern detected.");
       } else {
         toast(`Transaction ${data.status}`);
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || "Payment failed");
+    onError: (error: unknown) => {
+      if (isAxiosError(error)) {
+        toast.error(error.response?.data?.detail || "Payment failed");
+      } else {
+        toast.error("Payment failed");
+      }
     }
   });
 

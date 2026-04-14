@@ -1,13 +1,21 @@
+import { useState } from "react";
 import { useAuthStore } from "../../store/authStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 
 export function Sidebar() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/login");
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate("/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -17,10 +25,15 @@ export function Sidebar() {
         <p className="text-xs text-on-surface-variant font-medium tracking-wide">Secure Banking</p>
       </div>
       <nav className="flex-1 space-y-2">
-        <a className="flex items-center gap-3 px-4 py-3 bg-surface-container-lowest text-tertiary rounded-xl shadow-sm font-headline font-semibold duration-200 ease-in-out" href="#">
+        <NavLink 
+          to="/user" 
+          className={({ isActive }) => 
+            `flex items-center gap-3 px-4 py-3 rounded-xl shadow-sm font-headline font-semibold duration-200 ease-in-out ${isActive ? 'bg-surface-container-lowest text-tertiary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'}`
+          }
+        >
           <span className="material-symbols-outlined" data-icon="dashboard">dashboard</span>
           <span>Dashboard</span>
-        </a>
+        </NavLink>
       </nav>
       <div className="mt-auto p-4 bg-primary-container rounded-xl overflow-hidden relative group">
         <div className="relative z-10">
@@ -28,9 +41,13 @@ export function Sidebar() {
           <p className="text-primary-fixed text-xs opacity-70">Real-time threat monitoring is enabled.</p>
         </div>
       </div>
-      <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-on-surface hover:text-tertiary font-headline font-semibold text-left">
+      <button 
+        onClick={handleLogout} 
+        disabled={isLoggingOut}
+        className="flex items-center gap-3 px-4 py-3 text-on-surface hover:text-tertiary font-headline font-semibold text-left disabled:opacity-50 transition-opacity"
+      >
           <span className="material-symbols-outlined" data-icon="logout">logout</span>
-          <span>Logout</span>
+          <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
       </button>
     </aside>
   );

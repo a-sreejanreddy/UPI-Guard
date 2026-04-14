@@ -60,6 +60,7 @@ export function Login() {
       });
       const user: User = { 
         id: resp.data.user_id, 
+        mobile: mobileNumber,
         role: resp.data.role, 
         name: resp.data.name 
       };
@@ -165,7 +166,7 @@ export function Login() {
                     <span className="material-symbols-outlined text-xl" data-icon="lock_open">lock_open</span>
                   </button>
                   <div className="text-center">
-                    <button type="button" onClick={() => setStep("mobile")} className="text-sm font-semibold text-secondary hover:text-on-secondary-container transition-colors">
+                    <button type="button" onClick={() => { setStep("mobile"); setErrorMsg(""); }} className="text-sm font-semibold text-secondary hover:text-on-secondary-container transition-colors">
                       Change Mobile Number
                     </button>
                   </div>

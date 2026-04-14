@@ -163,7 +163,7 @@
 ---
 
 ### Phase 6: Auth UI & User Dashboard
-**Status**: Not Started
+**Status**: ✅ Complete
 **Objective**: Authentication flow UI and the User role dashboard — payment and history.
 
 **Deliverables:**
@@ -182,13 +182,13 @@
     Status badge colors: APPROVED=green, BLOCKED_FRAUD=red, ADMIN_OVERRIDDEN=amber
 
 **Tasks:**
-- [ ] Build LoginPage (two-step: mobile → OTP, React Hook Form + Zod validation)
-- [ ] Build SMSInboxPanel (polling useQuery, OTP displayed in bubble UI)
-- [ ] Build UserDashboard page layout
-- [ ] Build PaymentForm (merchant_upi + amount, useMutation)
-- [ ] Build FraudAlertModal (fraud_score as % with color gradient, details)
-- [ ] Build TransactionHistory table (TanStack Query, status badges)
-- [ ] Wire role-based redirect after successful login
+- [x] Build LoginPage (two-step: mobile → OTP, React Hook Form + Zod validation)
+- [x] Build SMSInboxPanel (polling useQuery, OTP displayed in bubble UI)
+- [x] Build UserDashboard page layout
+- [x] Build PaymentForm (merchant_upi + amount, useMutation)
+- [x] Build FraudAlertModal (fraud_score as % with color gradient, details)
+- [x] Build TransactionHistory table (TanStack Query, status badges)
+- [x] Wire role-based redirect after successful login
 
 ---
 
